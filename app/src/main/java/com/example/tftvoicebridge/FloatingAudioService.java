@@ -32,7 +32,7 @@ public class FloatingAudioService extends Service {
     private Socket socket;
 
     // --- BURAYI VDS IP ADRESİNLE DEĞİŞTİR ---
-    private static final String VDS_URL = "http://192.168.1.XX:5000"; 
+    private static final String VDS_URL = "http://192.168.1.127:5000"; 
     // ----------------------------------------
 
     private static final int SAMPLE_RATE = 48000;
