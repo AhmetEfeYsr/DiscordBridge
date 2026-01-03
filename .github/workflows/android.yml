@@ -14,15 +14,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      # DÜZELTME 1: Yeni Action ismini kullanıyoruz (setup-gradle)
-      # DÜZELTME 2: 'gradle-version: current' diyerek wrapper dosyası aramamasını söylüyoruz
+      # DÜZELTME: 'current' yerine '8.6' yazarak sabit ve uyumlu sürüm seçiyoruz.
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: current
+          gradle-version: '8.6'
 
-      # DÜZELTME 3: './gradlew' yerine direkt 'gradle' komutunu kullanıyoruz
-      # Çünkü web üzerinden dosya oluşturduğumuzda gradlew scripti oluşmaz.
       - name: Build Debug APK
         run: gradle assembleDebug --no-daemon
 
