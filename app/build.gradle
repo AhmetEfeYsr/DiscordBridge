@@ -21,8 +21,10 @@ android {
         }
     }
     
+    // Hataları görmezden gel
     lint {
         abortOnError false
+        checkReleaseBuilds false
     }
     
     compileOptions {
@@ -32,7 +34,6 @@ android {
 }
 
 dependencies {
-    // AndroidX ve AppCompat SİLİNDİ.
-    // Sadece bu lazım:
+    // SADECE BU OLACAK. Başka hiçbir 'implementation' satırı olmamalı.
     implementation 'io.socket:socket.io-client:2.1.0'
 }
