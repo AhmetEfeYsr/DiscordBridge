@@ -19,7 +19,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import androidx.core.app.NotificationCompat;
+// NotificationCompat sildik, gerek yok.
 import java.net.URISyntaxException;
 import java.util.Arrays;
 import io.socket.client.IO;
@@ -31,9 +31,9 @@ public class FloatingAudioService extends Service {
     private View floatingView;
     private Socket socket;
 
-    // --- BURAYI KENDİ VDS IP ADRESİNLE DEĞİŞTİR ---
+    // --- BURAYI VDS IP ADRESİNLE DEĞİŞTİR ---
     private static final String VDS_URL = "http://192.168.1.XX:5000"; 
-    // ----------------------------------------------
+    // ----------------------------------------
 
     private static final int SAMPLE_RATE = 48000;
     private boolean isMicActive = false;
@@ -44,10 +44,10 @@ public class FloatingAudioService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        startForegroundService(); // Bildirimi göster
-        setupSocket();            // VDS'e bağlan
-        setupFloatingWidget();    // Butonu ekrana koy
-        setupAudioPlayer();       // Hoparlörü hazırla
+        startForegroundService(); 
+        setupSocket();            
+        setupFloatingWidget();    
+        setupAudioPlayer();       
     }
 
     private void setupSocket() {
@@ -55,7 +55,6 @@ public class FloatingAudioService extends Service {
             socket = IO.socket(VDS_URL);
             socket.connect();
             
-            // Sunucudan (Discord'dan) ses gelince çal
             socket.on("discord_audio", args -> {
                 if (args.length > 0 && player != null) {
                     byte[] data = (byte[]) args[0];
@@ -79,9 +78,9 @@ public class FloatingAudioService extends Service {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         ImageView icon = new ImageView(this);
-        icon.setBackgroundColor(Color.RED); // Başlangıçta KAPALI (Kırmızı)
+        icon.setBackgroundColor(Color.RED); 
         
-        int size = (int) (50 * getResources().getDisplayMetrics().density); // 50dp boyut
+        int size = (int) (50 * getResources().getDisplayMetrics().density);
 
         WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 size, size,
@@ -95,7 +94,6 @@ public class FloatingAudioService extends Service {
 
         floatingView = icon;
 
-        // Sürükleme ve Tıklama Mantığı
         floatingView.setOnTouchListener(new View.OnTouchListener() {
             private int initialX, initialY;
             private float initialTouchX, initialTouchY;
@@ -113,14 +111,12 @@ public class FloatingAudioService extends Service {
                         return true;
 
                     case MotionEvent.ACTION_UP:
-                        // Kısa dokunuş ise TIKLAMA say
                         if (Math.abs(event.getRawX() - initialTouchX) < 10 && (System.currentTimeMillis() - startClickTime) < 200) {
                             toggleMic((ImageView) v);
                         }
                         return true;
 
                     case MotionEvent.ACTION_MOVE:
-                        // Parmağı takip et (Sürükle)
                         params.x = initialX + (int) (event.getRawX() - initialTouchX);
                         params.y = initialY + (int) (event.getRawY() - initialTouchY);
                         windowManager.updateViewLayout(floatingView, params);
@@ -135,11 +131,9 @@ public class FloatingAudioService extends Service {
 
     private void toggleMic(ImageView view) {
         if (isMicActive) {
-            // Kapat
             isMicActive = false;
             view.setBackgroundColor(Color.RED);
         } else {
-            // Aç
             isMicActive = true;
             view.setBackgroundColor(Color.GREEN);
             startRecording();
@@ -161,7 +155,6 @@ public class FloatingAudioService extends Service {
 
             while (isMicActive) {
                 int readBytes = recorder.read(buffer, 0, buffer.length);
-                // Sadece dolu veriyi gönder (Fix)
                 if (readBytes > 0 && socket.connected()) {
                     byte[] validData = Arrays.copyOf(buffer, readBytes);
                     socket.emit("mic_data", validData);
@@ -185,11 +178,21 @@ public class FloatingAudioService extends Service {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Voice Bridge", NotificationManager.IMPORTANCE_LOW);
             getSystemService(NotificationManager.class).createNotificationChannel(channel);
         }
-        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+        
+        // NotificationCompat yerine Native Builder kullanıyoruz
+        Notification.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder = new Notification.Builder(this, CHANNEL_ID);
+        } else {
+            builder = new Notification.Builder(this);
+        }
+
+        Notification notification = builder
                 .setContentTitle("TFT Ses Köprüsü")
-                .setContentText("Arka planda çalışıyor.")
-                .setSmallIcon(android.R.drawable.ic_btn_speak_now)
+                .setContentText("Arka planda çalışıyor")
+                .setSmallIcon(android.R.drawable.ic_btn_speak_now) // Standart Android ikonu
                 .build();
+                
         startForeground(1, notification);
     }
 
